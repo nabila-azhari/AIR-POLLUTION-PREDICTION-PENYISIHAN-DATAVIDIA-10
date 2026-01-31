@@ -5,7 +5,7 @@ from pathlib import Path
 # =====================
 # CONFIG
 # =====================
-CSV_PATH = Path.cwd() / "ispu_all_years.csv"
+CSV_PATH = Path.cwd() / "ispu_all_years_max_handled.csv"
 NA_VALUES = ["---", "--", "", " ", "NA", "N/A"]
 
 # =====================
@@ -133,3 +133,75 @@ for col in numeric_cols:
     print(df[col].describe())
 
 
+# =====================
+# MAX & PARAMETER PENCEMAR KRITIS VALIDATION
+# =====================
+print("\n" + "="*80)
+print("MAX & PARAMETER PENCEMAR KRITIS VALIDATION")
+print("="*80)
+
+# mapping kolom → label ISPU
+polutan_map = {
+    "pm_sepuluh": "PM10",
+    "pm_duakomalima": "PM25",
+    "sulfur_dioksida": "SO2",
+    "karbon_monoksida": "CO",
+    "ozon": "O3",
+    "nitrogen_dioksida": "NO2"
+}
+
+# pastikan kolom numerik
+for col in polutan_map:
+    df[col] = pd.to_numeric(df[col], errors="coerce")
+
+# hitung ulang max dari polutan
+df["_recalc_max"] = df[list(polutan_map.keys())].max(axis=1)
+
+# ---------------------
+# VALIDASI NILAI MAX
+# ---------------------
+max_mismatch = df[
+    (df["max"].notna()) &
+    (df["_recalc_max"].notna()) &
+    (df["max"] != df["_recalc_max"])
+]
+
+print(f"❌ Rows with incorrect max value : {len(max_mismatch)}")
+
+if len(max_mismatch) > 0:
+    print("\nSample MAX mismatches:")
+    print(
+        max_mismatch[
+            ["tanggal", "stasiun", "max", "_recalc_max"]
+        ].head()
+    )
+
+# ---------------------
+# VALIDASI PARAMETER KRITIS
+# ---------------------
+def check_critical(row):
+    if pd.isna(row["max"]):
+        return True  # abaikan baris tanpa max
+
+    for col, label in polutan_map.items():
+        if row[col] == row["max"]:
+            return row["parameter_pencemar_kritis"] == label
+
+    return False
+
+critical_mismatch = df[~df.apply(check_critical, axis=1)]
+
+print(f"❌ Rows with incorrect critical parameter : {len(critical_mismatch)}")
+
+if len(critical_mismatch) > 0:
+    print("\nSample CRITICAL mismatches:")
+    print(
+        critical_mismatch[
+            ["tanggal", "stasiun", "max", "parameter_pencemar_kritis"]
+        ].head()
+    )
+
+# cleanup kolom bantu
+df.drop(columns=["_recalc_max"], inplace=True)
+
+print("\n✅ MAX & PARAMETER PENCEMAR KRITIS VALIDATION SELESAI")
