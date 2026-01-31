@@ -5,7 +5,7 @@ from pathlib import Path
 # =====================
 # CONFIG
 # =====================
-CSV_PATH = Path.cwd() / "ispu_all_years_max_handled.csv"
+CSV_PATH = Path.cwd() / "ispu_all_years_duplicate_handled.csv"
 NA_VALUES = ["---", "--", "", " ", "NA", "N/A"]
 
 # =====================
