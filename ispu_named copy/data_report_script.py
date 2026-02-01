@@ -5,7 +5,7 @@ from pathlib import Path
 # =====================
 # CONFIG
 # =====================
-CSV_PATH = Path.cwd() / "ispu_all_years_duplicate_handled.csv"
+CSV_PATH = Path.cwd() / "ispu_all_years_max_handled.csv"
 NA_VALUES = ["---", "--", "", " ", "NA", "N/A"]
 
 # =====================
@@ -143,7 +143,6 @@ print("="*80)
 # mapping kolom → label ISPU
 polutan_map = {
     "pm_sepuluh": "PM10",
-    "pm_duakomalima": "PM25",
     "sulfur_dioksida": "SO2",
     "karbon_monoksida": "CO",
     "ozon": "O3",
