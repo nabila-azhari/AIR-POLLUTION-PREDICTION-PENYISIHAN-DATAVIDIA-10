@@ -110,6 +110,78 @@ def visualization(df):
 
 
 # =========================
+# COLUMN VALUE INSPECTOR
+# =========================
+# =========================
+# COLUMN VALUE INSPECTOR
+# =========================
+def cek_value_data_column(
+    df,
+    exception=None,
+    max_unique=None,
+    return_df=True
+):
+    """
+    Menampilkan unique values per kolom dalam format WIDE
+    (kolom = nama kolom, baris = unique values)
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    exception : list | set | str | None
+        Kolom yang ingin di-skip
+    max_unique : int | None
+        Batas maksimum unique value per kolom
+    return_df : bool
+        Jika True, return DataFrame hasil
+    """
+
+    # normalisasi exception
+    if exception is None:
+        exception = set()
+    elif isinstance(exception, str):
+        exception = {exception}
+    else:
+        exception = set(exception)
+
+    data = {}
+    max_len = 0
+
+    for col in df.columns:
+        if col in exception:
+            continue
+
+        uniques = df[col].dropna().unique().tolist()
+
+        if max_unique is not None:
+            uniques = uniques[:max_unique]
+
+        data[col] = uniques
+        max_len = max(max_len, len(uniques))
+
+    # samakan panjang list (biar bisa jadi DataFrame)
+    for col, values in data.items():
+        if len(values) < max_len:
+            data[col] = values + [None] * (max_len - len(values))
+
+    result_df = pd.DataFrame(data)
+
+    print("📋 UNIQUE VALUE REPORT (WIDE FORMAT)")
+    print(f"Total columns : {result_df.shape[1]}")
+    print(f"Max rows      : {result_df.shape[0]}")
+
+    display(result_df)
+
+    if return_df:
+        return result_df
+
+
+
+
+
+
+
+# =========================
 # MAIN EVALUATOR
 # =========================
 def evaluate_dataset(df, name=None, unique=None):
@@ -121,6 +193,7 @@ def evaluate_dataset(df, name=None, unique=None):
     cek_duplikat(df, unique)
     calculations(df)
     visualization(df)
+
 
 # =========================
 # COLUMN NAME EXTRACTOR
